@@ -6,19 +6,20 @@ import (
 	"log"
 )
 
-func HandlerLogin(server interfaces.Server) func([]byte) {
+func HandlerLogin(server interfaces.Server) func([]byte) []byte {
 	dependancy := server.Dependancy()
-	return func(packet []byte) {
+	return func(packet []byte) []byte {
 
 		log.Printf("got dependancy:%d", dependancy)
-		login(packet)
+		return login(packet)
 	}
 }
 
-func login(packet []byte) {
+func login(packet []byte) []byte {
 	login, err := messages.UnmarshalLogin(packet)
 	if err != nil {
 		log.Println("login error:", err)
 	}
 	log.Printf("player(%s) login", login.ID)
+	return nil
 }
