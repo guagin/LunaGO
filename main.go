@@ -1,7 +1,7 @@
 package main
 
 import (
-	"LunaFramework/server"
+	"LunaGO/server"
 	"log"
 	"net"
 )
@@ -21,7 +21,7 @@ func main() {
 			log.Println("accept err:", err)
 			break
 		}
-		go server_1.Start(connIndex, c)
+		go server_1.HandleNewConnection(connIndex, c)
 		connIndex++
 	}
 

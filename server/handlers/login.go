@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"LunaFramework/server/interfaces"
+	"LunaGO/server/interfaces"
+	"LunaGO/server/messages"
 	"log"
 )
 
@@ -15,6 +16,9 @@ func HandlerLogin(server interfaces.Server) func([]byte) {
 }
 
 func login(packet []byte) {
-	playerID := packet[0]
-	log.Printf("player(%d) login", playerID)
+	login, err := messages.UnmarshalLogin(packet)
+	if err != nil {
+		log.Println("login error:", err)
+	}
+	log.Printf("player(%s) login", login.ID)
 }
