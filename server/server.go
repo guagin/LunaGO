@@ -3,6 +3,7 @@ package server
 import (
 	"LunaGO/server/interfaces"
 	"LunaGO/server/stub"
+	"errors"
 	"net"
 )
 
@@ -18,7 +19,7 @@ type Server struct {
 // New initialize a server struct
 func New() *Server {
 
-	instance := &server{
+	instance := &Server{
 		port:       55550,
 		dependancy: 1,
 	}
@@ -27,20 +28,20 @@ func New() *Server {
 }
 
 // get dependancy
-func (server server) Dependancy() int32 {
+func (server Server) Dependancy() int32 {
 	return server.dependancy
 
 }
 
 // HandleNewConnection handle the connection for new incoming
-func (server *server) HandleNewConnection(cIndex int32, c net.Conn) {
+func (server *Server) HandleNewConnection(cIndex int32, c net.Conn) {
 	server.connectionHandler(cIndex, c)
 }
 
 // setup how to deal with new connection coming.
-func (server *server) SetConnectionHandler(handler func(int32, c net.Conn)) error {
+func (server *Server) SetConnectionHandler(handler func(int32, net.Conn)) error {
 	if handler == nil {
-		return error.Error("handler is nil")
+		return errors.New("handler is nil")
 	}
 	server.connectionHandler = handler
 	return nil
