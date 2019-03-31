@@ -8,16 +8,16 @@ import (
 )
 
 type Stub struct {
-	Packets    chan ([]byte)
+	packets    chan ([]byte)
 	id         int32
 	connection *conn.Connection
 	handlers   map[int32]func([]byte) []byte
-	Process    func(chan<- bool)
+	Process    func([]byte, chan<- bool)
 }
 
 func New(index int32) *Stub {
 	instance := &Stub{
-		Packets:  make(chan []byte, 300),
+		packets:  make(chan []byte, 300),
 		id:       index,
 		handlers: make(map[int32]func([]byte) []byte),
 	}
@@ -45,7 +45,7 @@ func (stub *Stub) SetConnection(c *conn.Connection) {
 
 func (stub *Stub) Start() {
 	quit := make(chan bool)
-	go stub.connection.StartReceiving(stub.Packets)
+	go stub.connection.StartReceiving(stub.packets)
 	go stub.processPacket(quit)
 	if <-quit {
 		log.Println("client send close event.")
@@ -58,8 +58,9 @@ func (stub *Stub) processPacket(quit chan<- bool) {
 			log.Println("u have set process method.")
 			return
 		}
-		stub.Process(quit)
-		// packet := <-stub.packets
+		packet := <-stub.packets
+		stub.Process(packet, quit)
+
 		// message, err := messages.Unmarshal(packet)
 		// if err != nil {
 		// 	log.Println("message unmarshal error:", err)
