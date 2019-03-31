@@ -54,6 +54,10 @@ func (stub *Stub) Start() {
 
 func (stub *Stub) processPacket(quit chan<- bool) {
 	for {
+		if stub.Process == nil {
+			log.Println("u have set process method.")
+			return
+		}
 		stub.Process(quit)
 		// packet := <-stub.packets
 		// message, err := messages.Unmarshal(packet)
@@ -76,4 +80,8 @@ func (stub *Stub) processPacket(quit chan<- bool) {
 		// stub.connection.Write(resInBytes)
 
 	}
+}
+
+func (stub *Stub) Send(message []byte) {
+	stub.connection.SendBytes(message)
 }
