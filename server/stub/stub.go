@@ -7,12 +7,13 @@ import (
 	"log"
 )
 
+// Stub to keep the infomation like connection..etc.
 type Stub struct {
 	packets    chan ([]byte)
 	id         int32
 	connection *conn.Connection
 	handlers   map[int32]func([]byte) []byte
-	Process    func([]byte, chan<- bool)
+	process    func([]byte)
 }
 
 func New(index int32) *Stub {
@@ -43,6 +44,10 @@ func (stub *Stub) SetConnection(c *conn.Connection) {
 	stub.connection = c
 }
 
+func (stub *Stub) SetProcess(process func([]byte)) {
+	stub.process = process
+}
+
 func (stub *Stub) Start() {
 	quit := make(chan bool)
 	go stub.connection.StartReceiving(stub.packets)
@@ -54,12 +59,12 @@ func (stub *Stub) Start() {
 
 func (stub *Stub) processPacket(quit chan<- bool) {
 	for {
-		if stub.Process == nil {
+		if stub.process == nil {
 			log.Println("u have set process method.")
 			return
 		}
 		packet := <-stub.packets
-		stub.Process(packet, quit)
+		stub.process(packet)
 
 		// message, err := messages.Unmarshal(packet)
 		// if err != nil {
