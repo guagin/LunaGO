@@ -26,6 +26,10 @@ func New(index int32) *Stub {
 	return instance
 }
 
+func (stub *Stub) ID() int32 {
+	return stub.id
+}
+
 func (stub *Stub) Handle(code int32, handler func(packet []byte) []byte) error {
 
 	if stub.handlers[code] != nil {
