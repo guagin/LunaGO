@@ -14,13 +14,15 @@ type Stub struct {
 	connection *conn.Connection
 	handlers   map[int32]func([]byte) []byte
 	process    func([]byte)
+	responses  chan []byte
 }
 
 func New(index int32) *Stub {
 	instance := &Stub{
-		packets:  make(chan []byte, 300),
-		id:       index,
-		handlers: make(map[int32]func([]byte) []byte),
+		packets:   make(chan []byte, 300),
+		id:        index,
+		handlers:  make(map[int32]func([]byte) []byte),
+		responses: make(chan []byte, 300),
 	}
 
 	return instance
@@ -56,6 +58,7 @@ func (stub *Stub) Start() {
 	quit := make(chan bool)
 	go stub.connection.StartReceiving(stub.packets)
 	go stub.processPacket(quit)
+	go stub.processResponses()
 	if <-quit {
 		log.Println("client send close event.")
 	}
@@ -67,7 +70,13 @@ func (stub *Stub) processPacket(quit chan<- bool) {
 			log.Println("u have set process method.")
 			return
 		}
-		packet := <-stub.packets
+		packet, ok := <-stub.packets
+		if !ok {
+			log.Println("packet channel closed.")
+			close(stub.responses)
+			quit <- true
+			return
+		}
 		stub.process(packet)
 
 		// message, err := messages.Unmarshal(packet)
@@ -92,6 +101,17 @@ func (stub *Stub) processPacket(quit chan<- bool) {
 	}
 }
 
-func (stub *Stub) Send(message []byte) {
-	stub.connection.SendBytes(message)
+func (stub *Stub) processResponses() {
+	for {
+		response, ok := <-stub.responses
+		if !ok {
+			log.Println("response channel closed.")
+			return
+		}
+		stub.connection.SendBytes(response)
+	}
+}
+
+func (stub *Stub) Send(packet []byte) {
+	stub.responses <- packet
 }
