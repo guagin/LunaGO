@@ -2,27 +2,25 @@ package stub
 
 import (
 	"LunaGO/server/conn"
-	"errors"
-	"fmt"
 	"log"
 )
 
 // Stub to keep the infomation like connection..etc.
 type Stub struct {
-	packets    chan ([]byte)
+	inPackets  chan ([]byte)
 	id         string
 	connection *conn.Connection
 	handlers   map[int32]func([]byte) []byte
 	process    func([]byte)
-	responses  chan []byte
+	outPackets chan []byte
 }
 
 func New(id string) *Stub {
 	instance := &Stub{
-		packets:   make(chan []byte, 300),
-		id:        id,
-		handlers:  make(map[int32]func([]byte) []byte),
-		responses: make(chan []byte, 300),
+		inPackets:  make(chan []byte, 300),
+		id:         id,
+		handlers:   make(map[int32]func([]byte) []byte),
+		outPackets: make(chan []byte, 300),
 	}
 
 	return instance
@@ -32,14 +30,15 @@ func (stub *Stub) ID() string {
 	return stub.id
 }
 
-func (stub *Stub) Handle(code int32, handler func(packet []byte) []byte) error {
+func (stub *Stub) Handle(code int32, handler func(packet []byte) []byte) {
 
 	if stub.handlers[code] != nil {
-		return errors.New(fmt.Sprintf("code:%d has been added.", code))
+		// return
+		return
 	}
 
 	stub.handlers[code] = handler
-	return nil
+	return
 }
 
 func (stub *Stub) GetHandler(code int32) func([]byte) []byte {
@@ -56,7 +55,7 @@ func (stub *Stub) SetProcess(process func([]byte)) {
 
 func (stub *Stub) Start() {
 	quit := make(chan bool)
-	go stub.connection.StartReceiving(stub.packets)
+	go stub.connection.StartReceiving(stub.inPackets)
 	go stub.processPacket(quit)
 	go stub.processResponses()
 	if <-quit {
@@ -70,10 +69,10 @@ func (stub *Stub) processPacket(quit chan<- bool) {
 			log.Println("u have set process method.")
 			return
 		}
-		packet, ok := <-stub.packets
+		packet, ok := <-stub.inPackets
 		if !ok {
 			log.Println("packet channel closed.")
-			close(stub.responses)
+			close(stub.outPackets)
 			quit <- true
 			return
 		}
@@ -103,7 +102,7 @@ func (stub *Stub) processPacket(quit chan<- bool) {
 
 func (stub *Stub) processResponses() {
 	for {
-		response, ok := <-stub.responses
+		response, ok := <-stub.outPackets
 		if !ok {
 			log.Println("response channel closed.")
 			return
@@ -113,5 +112,5 @@ func (stub *Stub) processResponses() {
 }
 
 func (stub *Stub) Send(packet []byte) {
-	stub.responses <- packet
+	stub.outPackets <- packet
 }
