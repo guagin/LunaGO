@@ -10,17 +10,17 @@ import (
 // Stub to keep the infomation like connection..etc.
 type Stub struct {
 	packets    chan ([]byte)
-	id         int32
+	id         string
 	connection *conn.Connection
 	handlers   map[int32]func([]byte) []byte
 	process    func([]byte)
 	responses  chan []byte
 }
 
-func New(index int32) *Stub {
+func New(id string) *Stub {
 	instance := &Stub{
 		packets:   make(chan []byte, 300),
-		id:        index,
+		id:        id,
 		handlers:  make(map[int32]func([]byte) []byte),
 		responses: make(chan []byte, 300),
 	}
@@ -28,7 +28,7 @@ func New(index int32) *Stub {
 	return instance
 }
 
-func (stub *Stub) ID() int32 {
+func (stub *Stub) ID() string {
 	return stub.id
 }
 
