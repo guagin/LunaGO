@@ -112,5 +112,7 @@ func (stub *Stub) processResponses() {
 }
 
 func (stub *Stub) Send(packet []byte) {
-	stub.outPackets <- packet
+	if packet != nil {
+		stub.outPackets <- packet
+	}
 }

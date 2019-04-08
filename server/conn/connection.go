@@ -144,9 +144,12 @@ func (client *Connection) SendBytes(b []byte) {
 		}
 	}()
 	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, uint32(len(b)))
+	err := binary.Write(buf, binary.LittleEndian, uint32(len(b)))
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 	buf.Write(b)
-	// log.Printf("%v", b)
 	client.conn.Write(buf.Bytes())
 }
 

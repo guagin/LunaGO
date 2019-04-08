@@ -17,7 +17,10 @@ var newRepositoryOnce sync.Once
 var stubRepo *stubRepository
 
 func StubRepository() *stubRepository {
-	newRepositoryOnce.Do(newStubRepo) // make sure repository only get one instance.
+	newRepositoryOnce.Do(func() {
+		newStubRepo()
+		go stubRepo.process()
+	}) // make sure repository only get one instance.
 	return stubRepo
 }
 
