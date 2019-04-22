@@ -1,9 +1,9 @@
 package server
 
 import (
-	"LunaGO/server/conn"
-	"LunaGO/server/interfaces"
-	"LunaGO/server/stub"
+	"github.com/guagin/LunaGo/server/conn"
+	"github.com/guagin/LunaGo/server/interfaces"
+	"github.com/guagin/LunaGo/server/stub"
 	"errors"
 )
 

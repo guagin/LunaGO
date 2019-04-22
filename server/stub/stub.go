@@ -1,7 +1,7 @@
 package stub
 
 import (
-	"LunaGO/server/conn"
+	"github.com/guagin/LunaGo/server/conn"
 	"log"
 )
 

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"LunaGO/server/stub"
+	"github.com/guagin/LunaGo/server/stub"
 	"errors"
 	"fmt"
 	"log"
